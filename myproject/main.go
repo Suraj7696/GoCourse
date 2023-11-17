@@ -1,25 +1,36 @@
 package main
 
-import assignment_3 "myproject/assignment_3"
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	"net/http"
+
+	api "myproject/assignment_4/api"
+
+	_ "github.com/go-sql-driver/mysql"
+)
 
 func main() {
-	var numbers []int
-	assignment_3.PrintSlice(numbers)
+	dsn := "root:password@tcp(127.0.0.1:3306)/library?parseTime=true"
 
-	numbers = append(numbers, 0)
-	assignment_3.PrintSlice(numbers)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	numbers = append(numbers, 1)
-	assignment_3.PrintSlice(numbers)
+	if err := db.Ping(); err != nil {
+		log.Fatal(err)
+	}
 
-	numbers = append(numbers, 2, 3, 4)
-	assignment_3.PrintSlice(numbers)
+	defer db.Close()
 
-	numbers1 := make([]int, len(numbers), (cap(numbers))*2)
+	fmt.Println("DB drivers established")
 
-	copy(numbers1, numbers)
-	assignment_3.PrintSlice(numbers1)
+	api.RegisterRoutes(db)
 
-	assignment_3.GoMap()
+	fmt.Println(" Sent Request")
 
+	log.Println("listening on port 8080......")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
